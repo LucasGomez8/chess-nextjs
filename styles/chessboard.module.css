@@ -1,0 +1,34 @@
+#square{
+    display: grid;
+    grid-template-columns: repeat(8, 100px);
+    border: 1px solid black;
+    grid-template-rows: repeat(8, 87px);
+    width: 800px;
+}
+
+
+
+.chess_black_square{
+    background-color:#553300;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.chess_white_square{
+    background-color: #FFFCBB;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.chess_divisions{
+    border: 1px solid black;
+}
+
+.chess_piece_img{
+    width: 65px;
+    height: 65px;
+}
