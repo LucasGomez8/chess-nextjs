@@ -3,124 +3,28 @@ import styles from "../styles/chessboard.module.css";
 import { useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
 import Jimmy from "./jimmy/Jimmy";
-
-const verticalPosition = ["1", "2", "3", "4", "5", "6", "7", "8"];
-const horizontalPosition = ["a", "b", "c", "d", "e", "f", "g", "h"];
-
-let positions = [];
-const pieces = [];
-
-for (let i = 0; i < 8; i++) {
-  pieces.push({
-    id: "a" + i,
-    img: "./assets/img/black_pawn.png",
-    x: i,
-    y: 6,
-    team: "black",
-    type: "pawn",
-  });
-}
-for (let i = 0; i < 8; i++) {
-  pieces.push({
-    id: "b" + i,
-    img: "./assets/img/white_pawn.png",
-    x: i,
-    y: 1,
-    team: "white",
-    type: "pawn",
-  });
-}
-
-for (let i = 0; i < 2; i++) {
-  const color = i == 0 ? "black" : "white";
-  const exeY = i == 0 ? 7 : 0;
-  //ROOKS
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_rook.png`,
-    x: 0,
-    y: exeY,
-    team: color,
-    type: "rook",
-  });
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_rook.png`,
-    x: 7,
-    y: exeY,
-    team: color,
-    type: "rook",
-  });
-
-  // KNIGHTS
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_knight.png`,
-    x: 1,
-    y: exeY,
-    team: color,
-    type: "knight",
-  });
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_knight.png`,
-    x: 6,
-    y: exeY,
-    team: color,
-    type: "knight",
-  });
-
-  // BISHOP
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_bishop.png`,
-    x: 2,
-    y: exeY,
-    team: color,
-    type: "bishop",
-  });
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_bishop.png`,
-    x: 5,
-    y: exeY,
-    team: color,
-    type: "bishop",
-  });
-
-  // QUEEN
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_queen.png`,
-    x: 3,
-    y: exeY,
-    team: color,
-    type: "queen",
-  });
-
-  // KING
-  pieces.push({
-    id: v4(),
-    img: `./assets/img/${color}_king.png`,
-    x: 4,
-    y: exeY,
-    team: color,
-    type: "king",
-  });
-}
+import { verticalPosition, horizontalPosition, PiecesPlaces } from "./pieces/Places";
 
 export default function ChessBoard() {
-  const [defPieces, setDefPieces] = useState(pieces);
+
+  let positions = [];
+  const [defPieces, setDefPieces] = useState(PiecesPlaces());
   const [idTarget, setIdTarget] = useState();
   const [activePiece, setActivePiece] = useState(false);
   const [firstLoad, setFirstLoad] = useState(false);
-  const [initialPositions, setInitialPositions] = useState(positions);
+  const [initialPositions, setInitialPositions] = useState();
   const [axis, setAxis] = useState({
     x: 0,
     y: 0,
   });
 
   const board = useRef();
+
+  const loseAPiece = (id, team) => {
+
+    //The TEAM argument it will be used for the points in a future
+    setDefPieces(defPieces.filter( item => item.id !== id));
+  }
 
   const jim = new Jimmy();
 
@@ -159,17 +63,25 @@ export default function ChessBoard() {
         setActivePiece(true);
       }
     } else {
-      //   const x = Math.floor((e.clientX - board.current.offsetLeft) / 100);
-      //   const y = Math.abs(
-      //     Math.ceil((e.clientY - board.current.offsetTop - 750) / 100)
-      //   );
+      let x;
+      let y;
+      if(e.target.className.includes("piece")){
+        defPieces.forEach( item => {
+          if(item.id == e.target.id){
+            x = item.x,
+            y = item.y
+          }
+        })
+      }
+      else{
+        x = e.target.getAttribute("x");
+        y = e.target.getAttribute("y");
+      }
       const piec = defPieces.find((i) => i.id == idTarget);
-      const x = e.target.getAttribute("x");
-      const y = e.target.getAttribute("y");
+
       if (
-        jim.validateNextPosition(piec.x, piec.y, x, y, piec.team, piec.type)
+        jim.validateNextPosition(piec.x, piec.y, x, y, piec.team, piec.type, defPieces, loseAPiece)
       ) {
-        console.log("validate move");
         defPieces.forEach((p) => {
           if (p.id == idTarget) {
             p.x = x;
@@ -179,7 +91,6 @@ export default function ChessBoard() {
       } else {
         console.log("not valid");
       }
-
       setActivePiece(false);
       setFirstLoad(!firstLoad);
     }
