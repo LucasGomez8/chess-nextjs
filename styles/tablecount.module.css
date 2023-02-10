@@ -1,0 +1,14 @@
+.tablecontainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    font-family: 'Rampart One', cursive;
+}
+
+.itemtable{
+    height: 100%;
+    text-align: center;
+    font-size: 25px;
+    margin: 0px 20px;
+}

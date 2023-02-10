@@ -4,11 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
 import Jimmy from "./jimmy/Jimmy";
 import { verticalPosition, horizontalPosition, PiecesPlaces } from "./pieces/Places";
+import {addingAPieceToCountTable, findTeam} from "./generalfunctions/general_functions";
 
 export default function ChessBoard() {
 
   let positions = [];
+  let teamTurn = "";
   const [defPieces, setDefPieces] = useState(PiecesPlaces());
+  const [isKingDead, setIsKingDead] = useState(false);
+  const [turns, setTurns] = useState('white');
   const [idTarget, setIdTarget] = useState();
   const [activePiece, setActivePiece] = useState(false);
   const [firstLoad, setFirstLoad] = useState(false);
@@ -22,7 +26,11 @@ export default function ChessBoard() {
 
   const loseAPiece = (id, team) => {
 
-    //The TEAM argument it will be used for the points in a future
+    let piece = defPieces.filter( item => item.id == id);
+    if(piece[0].type == 'king'){
+      alert('Check Mate... Game Over');
+    }
+    addingAPieceToCountTable(piece);
     setDefPieces(defPieces.filter( item => item.id !== id));
   }
 
@@ -59,8 +67,14 @@ export default function ChessBoard() {
   const handleClickPiece = (e) => {
     if (activePiece == false) {
       if (e.target.className.includes("piece")) {
-        setIdTarget(e.target.id);
-        setActivePiece(true);
+        teamTurn = findTeam(e.target.id, defPieces);
+        if(teamTurn == turns){
+          setIdTarget(e.target.id);
+          setActivePiece(true);
+        }
+        else{
+          alert("Nope, it's opponets turn");
+        }
       }
     } else {
       let x;
@@ -88,8 +102,16 @@ export default function ChessBoard() {
             p.y = y;
           }
         });
+
+        if(turns == 'white'){
+          setTurns('black');
+        }
+        else{
+          
+        setTurns('white');
+        }
       } else {
-        console.log("not valid");
+        alert("Ups! That's not a valid move")
       }
       setActivePiece(false);
       setFirstLoad(!firstLoad);

@@ -3,6 +3,7 @@ import { validateBishopMoves } from "../movementrules/Bishop";
 import { validateRookMoves } from "../movementrules/Rook";
 import { validateKnightMoves } from "../movementrules/Knight";
 import { validateQueenMovements } from "../movementrules/Queen";
+import { validateKingMoves } from "../movementrules/King";
 
 export default class Jimmy{
 
@@ -21,6 +22,8 @@ export default class Jimmy{
                     return validateKnightMoves(py, px, nx, ny, team, positions, loseAPiece);
                 case 'queen':
                     return validateQueenMovements(py, px, nx, ny, team, positions, loseAPiece); 
+                case 'king':
+                    return validateKingMoves(py, px, nx, ny, team, positions, loseAPiece);
                     default:
                     return false;
             }
