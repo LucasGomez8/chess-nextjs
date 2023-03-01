@@ -6,6 +6,9 @@ import Jimmy from "./jimmy/Jimmy";
 import { verticalPosition, horizontalPosition, PiecesPlaces } from "./pieces/Places";
 import {addingAPieceToCountTable, findTeam} from "./generalfunctions/general_functions";
 
+import {Modal} from 'react-bootstrap';
+import { Button } from "react-bootstrap";
+
 export default function ChessBoard() {
 
   let positions = [];
@@ -17,6 +20,15 @@ export default function ChessBoard() {
   const [activePiece, setActivePiece] = useState(false);
   const [firstLoad, setFirstLoad] = useState(false);
   const [initialPositions, setInitialPositions] = useState();
+  const [show, setShow] = useState(false);
+  const [showCautionModal, setShowCautionModal] = useState(false);
+  const [showLoseModal, setShowLoseModal] = useState(false);
+  const [opTurn, setOpTurn] = useState(false);
+  const [lastPieceMove, setLastPieceMove] = useState(0);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   const [axis, setAxis] = useState({
     x: 0,
     y: 0,
@@ -28,14 +40,13 @@ export default function ChessBoard() {
 
     let piece = defPieces.filter( item => item.id == id);
     if(piece[0].type == 'king'){
-      alert('Check Mate... Game Over');
     }
     addingAPieceToCountTable(piece);
     setDefPieces(defPieces.filter( item => item.id !== id));
   }
-
+  
   const jim = new Jimmy();
-
+  
   useEffect(() => {
     positions = [];
     for (let i = verticalPosition.length - 1; i >= 0; i--) {
@@ -48,6 +59,11 @@ export default function ChessBoard() {
             img = p.img;
             id = p.id;
           }
+
+          if(lastPieceMove.id == p.id){
+            img = lastPieceMove.img;
+          }
+
         });
         positions.push(
           <ChessTiles
@@ -73,7 +89,7 @@ export default function ChessBoard() {
           setActivePiece(true);
         }
         else{
-          alert("Nope, it's opponets turn");
+          setShowCautionModal(true);
         }
       }
     } else {
@@ -92,6 +108,7 @@ export default function ChessBoard() {
         y = e.target.getAttribute("y");
       }
       const piec = defPieces.find((i) => i.id == idTarget);
+      setLastPieceMove(piec.id);
 
       if (
         jim.validateNextPosition(piec.x, piec.y, x, y, piec.team, piec.type, defPieces, loseAPiece)
@@ -103,6 +120,10 @@ export default function ChessBoard() {
           }
         });
 
+        if(piec.type == "pawn" && (y == 7 || y == 0)){
+          setShow(true);
+        }
+
         if(turns == 'white'){
           setTurns('black');
         }
@@ -111,17 +132,79 @@ export default function ChessBoard() {
         setTurns('white');
         }
       } else {
-        alert("Ups! That's not a valid move")
+        //invalid move
+        setOpTurn(true);
       }
       setActivePiece(false);
       setFirstLoad(!firstLoad);
     }
+
   };
+
+  const changePromo = (src) => {
+      defPieces.forEach( item => {
+        if(item.id == lastPieceMove){
+          item.img = `./assets/img/${item.team}_${src}.png`,
+          item.type = src
+        }
+      })
+      setFirstLoad(!firstLoad);
+      setShow(false);
+  }
 
   // WEB DISPLAYING
   return (
     <div id={styles.square} ref={board} onClick={(e) => handleClickPiece(e)}>
       {initialPositions}
+
+      <div>
+
+        {/* PROMOTION MODAL */}
+        <Modal show={show} onHide={handleClose} animation={false}>
+        <Modal.Header style={{backgroundColor: "#052136"}}>
+          <Modal.Title style={{color: "white"}}>Choose your promotion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Your pawn has reached enemy's final line, get your reward
+          <div className={styles.promodalrow}>
+            <img src="./assets/img/white_bishop.png" alt="Bishop" onClick={ e => changePromo('bishop')}  />
+            <img src="./assets/img/white_rook.png" alt="Rook" onClick={ e => changePromo('rook')} />
+            <img src="./assets/img/white_knight.png" alt="Knight" onClick={ e => changePromo('knight')} />
+            <img src="./assets/img/white_queen.png"  alt="Queen" onClick={ e => changePromo('queen')} />
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      {/*CAUTION MODAL*/}
+      <Modal show={showCautionModal} onHide={handleClose} animation={false}>
+        <Modal.Header style={{backgroundColor: "#052136"}}>
+          <Modal.Title style={{color: "white"}}>Can't Do That</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Uh Oh!... It's Opponents Turn
+        </Modal.Body>
+      </Modal>
+
+      {/* LOSE MODAL */}
+      <Modal show={showLoseModal} onHide={handleClose} animation={false}>
+        <Modal.Header style={{backgroundColor: "#052136"}}>
+          <Modal.Title style={{color: "white"}}>GAME OVER</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          You Lose :(
+        </Modal.Body>
+      </Modal>
+
+      {/* OPPONENTS TURNS*/}
+      <Modal show={opTurn} onHide={handleClose} animation={false}>
+        <Modal.Header style={{backgroundColor: "#052136"}}>
+          <Modal.Title style={{color: "white"}}>Seriously??</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          It's not your turn
+        </Modal.Body>
+      </Modal>
+      </div>
     </div>
   );
 }
